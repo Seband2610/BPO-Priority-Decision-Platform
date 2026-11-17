@@ -1,0 +1,12 @@
+[
+    {
+        "request_id": "REQ-2001",
+        "customer": "fabio",
+        "issue": "nada",
+        "urgency": 8,
+        "category": "Billing",
+        "customer_tier": "Premium",
+        "sla_hours": 2.5,
+        "status": "Open"
+    }
+]
