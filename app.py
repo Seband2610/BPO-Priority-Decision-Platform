@@ -5,7 +5,12 @@ from flask import (
 
 from main import process_requests
 from report_generator import generate_report
-from excel_reader import save_additional_requests, read_uploaded_excel
+from excel_reader import (
+    save_additional_requests,
+    read_uploaded_excel,
+    update_existing_request,
+    delete_existing_request
+)
 
 
 app = Flask(__name__)
@@ -94,6 +99,61 @@ def import_requests():
     return redirect(url_for("add_request"))
 
 
+@app.route("/requests/<request_id>/edit", methods=["GET", "POST"])
+def edit_request(request_id):
+    requests_data = process_requests()
+
+    current_request = next(
+        (
+            item for item in requests_data
+            if item["request_id"].strip().lower() == request_id.strip().lower()
+        ),
+        None
+    )
+
+    if current_request is None:
+        flash("Request not found.", "error")
+        return redirect(url_for("dashboard"))
+
+    if request.method == "POST":
+        updated_record = {
+            "request_id": current_request["request_id"],
+            "customer": request.form.get("customer", ""),
+            "issue": request.form.get("issue", ""),
+            "urgency": request.form.get("urgency", ""),
+            "category": request.form.get("category", ""),
+            "customer_tier": request.form.get("customer_tier", ""),
+            "sla_hours": request.form.get("sla_hours", ""),
+            "status": request.form.get("status", "Open")
+        }
+
+        try:
+            update_existing_request(request_id, updated_record)
+            flash("Request updated successfully.", "success")
+            return redirect(url_for("dashboard"))
+        except Exception as error:
+            flash(str(error), "error")
+
+    return render_template(
+        "edit_request.html",
+        request=current_request
+    )
+
+
+@app.route("/requests/<request_id>/delete", methods=["POST"])
+def remove_request(request_id):
+    try:
+        delete_existing_request(request_id)
+        flash(
+            f"Request {request_id} was removed from the platform.",
+            "success"
+        )
+    except Exception as error:
+        flash(str(error), "error")
+
+    return redirect(url_for("dashboard"))
+
+
 @app.route("/download-report")
 def download_report():
     requests_data = process_requests()
@@ -102,7 +162,7 @@ def download_report():
     return send_file(
         report_path,
         as_attachment=True,
-        download_name="BPO_Priority_Report.xlsx"
+        download_name="BPO_Executive_Management_Report.docx"
     )
 
 

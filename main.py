@@ -1,7 +1,8 @@
+
 from excel_reader import load_requests
 from scoring import calculate_priority
 from decision import make_decision
-from report_generator import generate_report
+from report_generator import generate_all_reports
 
 
 def process_requests():
@@ -34,6 +35,16 @@ if __name__ == "__main__":
             f"{request['decision']}"
         )
 
-    report_path = generate_report(results)
-    print("\nReport generated successfully:")
-    print(report_path)
+    report_paths = generate_all_reports(results)
+
+    print("\nREPORTS GENERATED SUCCESSFULLY")
+    print("=" * 45)
+
+    print("GENERAL REPORT:")
+    print(report_paths["general"])
+
+    print("\nCRITICAL REQUESTS REPORT:")
+    print(report_paths["critical"])
+
+    print("\nNORMAL REQUESTS REPORT:")
+    print(report_paths["normal"])
